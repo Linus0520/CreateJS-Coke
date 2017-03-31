@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Coke</title>
+
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script>var zon = true; // true for comments from zim code</script>
+<script src="https://d309knd7es5f10.cloudfront.net/zim_4.9.0.js"></script>
+<script src="../libraries/coke.js"></script>
+
+<script>
+
+var scaling = "fit"; 
+var width = 1000;
+var height = 800;
+var color = "#F40009";
+var frame = new zim.Frame(scaling, width, height, color); 
+frame.on("ready", function() {
+	zog("ready from ZIM Frame");
+
+	var stage = frame.stage;
+	var stageW = frame.width;
+	var stageH = frame.height;
+
+	var waiter = new zim.Waiter(stage);
+	waiter.show();
+
+	frame.loadAssets([
+        "bottle.png",
+        "1.mp3" 
+    ], "asset/");
+
+	frame.on("complete",function(){
+	    waiter.hide();
+        frame.asset("1.mp3").play({loop:-1});
+
+
+//load assets
+	        var bottle = frame.asset("bottle.png");
+	     stage.addChild(bottle);
+	     bottle.center(stage);
+	     bottle.y = bottle.y+50;
+	   
+	//draw bublles	
+	    var sX, sY, pX, pY, draw;
+	    var draws = [];
+	    for (var i=0; i<4; i++) {
+	        sX = stageW/2;
+	        sY = bottle.y+200;
+	        pX = 6;
+	        pY = 6;
+	        draw = new cokejs.Draw(
+	            [bottle.x+200,bottle.y+185,stageW-bottle.x-205,stageH-bottle.y+100],
+	            sX, sY, pX, pY);
+	        draws.push(draw);
+	    };
+
+	    var color = ["#79a8a9","#ede574","#f9d423","#fc913a","#ff4e50"];
+	    var count = 0;
+
+	    function animate() {
+	        requestAnimationFrame(animate);
+	        var r = zim.rand(0,4)
+	        var circle = new zim.Circle(10,color[r])
+	        .addTo(stage)
+	        .pos(sX, sY);
+	        circle.x = draws[0].x;
+	        circle.y = draws[0].y;
+	        circle.alpha = .8;
+	        count++;
+	            for(var i=0; i<draws.length;i++){
+	                for( var j=0; j<1000; j++){
+	                draws[i].advance();
+	            };     
+	        };
+
+	//animate bubbles
+	        circle.animate({
+	            obj:{x:0,y:-20},
+	            time:500,
+	            loop:true,
+	            ease:"linearInOut",
+	            sequence:5000
+	        });
+
+	//draw straws     
+	        var line = new zim.Shape().addTo(stage);
+	        circle.on("mouseover", function(){
+	        stage.removeChild(circle);
+	        line.graphics
+	        .c()
+	        .ss(8,"round")
+	        .s(createjs.Graphics.getRGB(255, 255, 255, 0.5)) 
+	        .mt(circle.x, 370)
+	        .bt(stageW/2,50,
+	            stageW/2,cokejs.rand(100,150),
+	            cokejs.rand(stageW/2-200,stageW/2+200),
+	            cokejs.rand(100,150))
+	        });
+	        stage.update();
+
+	        setInterval(function(){
+	            stage.removeChild(circle)
+	        }, 2000);
+
+	        setInterval(function(){
+	            line.graphics.clear()
+	        }, 2000);
+	    };
+	    animate();
+
+	//draw art
+	    var startX, startY, speedX, speedY, bounce;
+	    var bounces = [];
+	    for (var i=0; i<4; i++) {
+	        startX = cokejs.rand(0, stageW);
+	        startY = cokejs.rand(0, stageH);
+	        speedX = .1;
+	        speedY = .1;
+	        bounce = new cokejs.Bounce(
+	           [100,bottle.y+200,stageW-100,stageH-bottle.y],
+	            startX, startY, speedX, speedY, .05
+	        );
+	        bounces.push(bounce);
+	    };
+
+	    var art = new zim.Shape();
+	    art.cache(0, 0, stageW, stageH);
+	    var blit = new zim.Bitmap(art.cacheCanvas).addTo(stage);
+
+	    var count = 0;
+	    function animate2() {
+	        requestAnimationFrame(animate2);
+	        count++
+	        for (var i=0; i<bounces.length; i++) {
+	            for (var j=0; j<50; j++) {
+	                bounces[i].advance();
+	            };
+	        };
+
+	        art.graphics
+	        .c()
+	        .ss(2)
+	        .s(createjs.Graphics.getRGB(255, 255, 255, 0.1))
+	        .mt(100, stageH/2+200)
+	        .bt(
+	            bounces[1].x, bounces[1].y+100,
+	            bounces[2].x, bounces[2].y+100,
+	            stageW-100, stageH/2+200
+	        );
+	        art.updateCache("source-over");
+	        stage.update();
+	    };
+	    animate2();
+
+	    setInterval(function() {
+	        art.graphics.clear();
+	        art.updateCache()
+	    }, 5000);
+	    });
+
+	    stage.update();
+    }); // end of ready
+</script>
+</head>
+
+<body>
+<!-- canvas with id="myCanvas" is made by zim Frame -->
+</body>
+</html>
